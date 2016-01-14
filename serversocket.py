@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # Copyright (c) James Cadek
 
-import socket, os, sys
+import socket, os, sys, select
 
 # Specifies TCP & IP
 serverSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-
-serverSocket.bind(("0.0.0.0",12345))
+serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
+serverSocket.bind(("0.0.0.0",12347))
 
 serverSocket.listen(5)
 
@@ -18,6 +18,7 @@ while True:
     if (pid == 0):
             #Child process
             outgoingSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            
 
             outgoingSocket.connect(("www.google.com",80))
 
@@ -46,6 +47,8 @@ while True:
                         raise
                 if(part):
                     incomingSocket.sendall(part)
+                select.select(
+                        [incomingSocket, outgoingSocket],[],[incomingSocket, outgoingSocket],1000.0)
                 
             print request
             sys.exit(0)
